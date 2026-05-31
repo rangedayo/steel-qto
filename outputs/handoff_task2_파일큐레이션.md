@@ -79,4 +79,15 @@
 
 ## 실제 가져간 / 두고 간 결과 (작업 10 후 갱신)
 
-_작업 9·10(임포트 PR 머지) 완료 후 `git ls-files` 기준으로 채움._
+초기 임포트 PR **#1** (squash merged, 2026-05-31) 기준 — `git ls-files` **128 파일**.
+
+**가져감 (128)**: 루트 5(README·LICENSE·.gitignore·.python-version·pyproject) + config 5 yaml +
+poc_v2 58 + docs 2 + reference_materials xlsx 2 + outputs 56.
+
+**두고 감**: sample_data/*.dxf(기밀) · outputs/visualize(~45) · outputs/notes · outputs/diagnose ·
+outputs/archive · reference_materials/dxf_anal7.py · outputs/prompts/claude_code_prompt.md · 캐시류.
+
+**PR diff 점검**: 금지 패턴·dxf·캐시·외부URL·이메일 0건. LICENSE Copyright=rangedayo. reference_materials xlsx 2종만.
+
+> 본 보고서(handoff_task2_보고서.md)와 본 큐레이션 doc의 이 최종값은 임포트 머지 후 작성되어,
+> 후속 PR #2 로 신규 레포에 반영됨.
