@@ -1,0 +1,24 @@
+# 환경
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# 비밀 정보 (환경변수 파일은 절대 커밋 금지)
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# 기밀 입력 데이터 (Notion 별도 채널)
+sample_data/*.dxf
+
+# 빌드·캐시
+*.egg-info/
+.pytest_cache/
+
+# reference_materials/ 는 git 포함 (정답지 xlsx 2종 — 기밀 아님)

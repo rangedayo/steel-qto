@@ -1,0 +1,100 @@
+# 철골 부재 카운팅 규칙 — 1단계 합계 기준 카운팅.
+#
+# 라운드 2 방침: 페이지 분할 폐기. 도면 전체에서 보이는 철골 부호 종류·개수를
+# 합계 기준으로 카운트한다. 이 파일은 "무엇을 셀지(화이트리스트)"와
+# "무엇을 거를지(제외 규칙)"만 정의한다. 페이지 bbox·더블카운팅 정책은 폐기됨.
+
+# ── 1단계 카운팅 대상 — 철골 부재만 ──────────────────────────────────────────
+steel_whitelist:
+  columns:    [MC1, MC2, MC3, SC1, SC2]
+  girders:    [SG1, SG2, SG3, WG1, CRG1, VG1, MT1]
+  beams:      [SB1, SB2, SB3, VT1]
+  roof_beams: [RSG1, RSG2, RSG3, RSB1, RSB2, RSB3]
+  braces:     [BR1, BR2]
+
+# ── 카운트 제외 prefix (자동 거름) ───────────────────────────────────────────
+excluded_prefixes:
+  foundation: [F, FS, MF]      # 콘크리트 기초
+  rebar:      [HD, D, SR, SBR] # 철근
+  detail:     [DS, DT]         # 상세 참조
+  thickness:  [THK]            # 두께 표기
+  grid:       [X, Y]           # 통심선 (X01, Y01 등)
+
+# ── 카운트 제외 패턴 (자동 거름) ─────────────────────────────────────────────
+excluded_patterns:
+  - "^H-\\d"  # H-200x100 같은 규격 표기
+  - "^\\d+$"  # 순수 숫자
+
+# ── 도면별 텍스트 height 필터 ────────────────────────────────────────────────
+# 도면마다 부재 실표기는 "큰 글자", 주석·상세참조 등 오탐은 "작은 글자"로
+# height 가 갈린다. min_height 이상인 텍스트만 카운트해 작은 글자를 거른다.
+#   min_height: 숫자  → 그 height 이상만 카운트
+#   min_height: null  → 필터 미적용 (모든 height 카운트)
+text_height_filter:
+  도면1:
+    min_height: 177       # height > 176만 카운트 (159·176 작은글자 제외)
+  도면2:
+    min_height: 302       # height 301(작은글자) 제외, 400(큰글자)만 카운트 (라운드 4)
+  도면3:
+    min_height: null      # 라운드 8: 도면3 height 구조가 도면1·2와 정반대(본체 221.8이 작은글자, 일람표 275.6/큰글자 337.5). min_height 컷이 본체를 죽이므로 필터 미적용.
+  도면4:
+    min_height: null      # 진단 전이므로 필터 미적용
+  도면5:
+    min_height: null      # 라운드 9: 본체(448.0) ↔ 일람표(413.4) 갭 34.6 으로
+                          # 분리 깨끗하지 않음 (라운드 6 D항 원칙). 자동 정책으로 4/4 PASS.
+
+# ── 라운드 6: policy_p 도면별 분기 폐기 → 신호 2·3 자동 판단으로 대체 ────────
+# 라운드 5 의 policy_p 도면별 수동 분기는 auto_policy.auto_detect_policy 가
+# 도면 분석으로 자동 산출한다. 롤백 대비 원본을 주석으로 보존한다.
+# policy_p:
+#   도면1:
+#     exclude_table_regions: false
+#     exclude_with_spec: false
+#   도면2:
+#     exclude_table_regions: false
+#     exclude_with_spec: false    # BR2 매칭 보호
+#   도면4:
+#     exclude_table_regions: true
+#     exclude_with_spec: true
+
+# ── 라운드 6: 정책 자동 판단 파라미터 (모든 도면 공통) ───────────────────────
+# spec_pattern_threshold : 부호+규격 패턴 빈도 임계값. 화이트리스트 부호 수 ×
+#                          이 비율 이상이면 exclude_with_spec=True (신호 3).
+auto_policy_params:
+  spec_pattern_threshold: 0.3
+
+# ── 라운드 6: 자동 판단 오버라이드 (비상시만; 기본 null = 자동) ──────────────
+# null  → auto_detect_policy 의 신호 2·3 자동 결정을 사용한다.
+# dict  → 자동 판단을 무시하고 강제. 도면3 이 첫 사례 (라운드 8).
+#         아래 도면3 주석 참조.
+policy_override:
+  도면1: null
+  도면2: null
+  # 도면3: 라운드 8 검증으로 효과 분리 확인
+  #   exclude_table_regions: 결정적 (auto_policy._detect_table_regions 가
+  #     baseline 의 _TABLE_SPARSE_MAX=5 보정 미적용 → 본체 자유 텍스트로
+  #     일람표 0곳 오판 → 자동 OFF. override 로만 베이스라인 검출 1곳 차감 가능.
+  #   exclude_with_spec: 효과 없음 (자동도 True). 라운드 8 슬래시 매칭 추가의
+  #     부산물로 auto_policy._classify_text 가 슬래시 결합 32개를 withspec 으로
+  #     오분류 → 임계값 1.2 자동 통과. 사전 진단의 "1개 < 1.2 미달" 우려가
+  #     의도치 않게 해소됨.
+  #   라운드 9 도면5 사전 진단에서 같은 신호 2 자동 OFF 가 재현되는지 확인 후
+  #   auto_policy 와 baseline 의 일람표 검출 입력 통일 여부를 결정한다.
+  도면3:
+    exclude_table_regions: true
+    exclude_with_spec: true
+  도면4: null
+  도면5: null  # 라운드 9: 자동 판정이 정확 작동 (사전 진단 6 비재현 확정).
+               # 도면3와 본체 표기는 동형(슬래시 결합)이지만, auto_policy 의
+               # exclude_with_spec=True 필터링으로 자유 텍스트 입력이 깨끗 →
+               # _TABLE_SPARSE_MAX=5 보정 부재의 영향을 받지 않음 → 신호 2 자동 ON.
+               # 라운드 6 D항·라운드 8 H항 인계 메모대로 "도면3 특수성 확정 / override 유지".
+
+# ── 일람표 영역 검출 파라미터 (정책 P 신호 1) ───────────────────────────────
+# region_size_ratio    : 그리드 셀 크기 = 도면 폭 × 이 비율
+# min_distinct_symbols : 한 영역에 이 종류 수 이상이면 일람표 후보
+# max_count_per_symbol : 부호당 등장이 이 수 이하여야 일람표 (부재 밀집 영역 배제)
+table_region_detection:
+  region_size_ratio: 0.033
+  min_distinct_symbols: 4
+  max_count_per_symbol: 2
