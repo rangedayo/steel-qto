@@ -1,0 +1,7 @@
+# 메타데이터 전용 — 빌드/패키징 대상 아님 (의존성은 poc_v2/requirements.txt 가 소스)
+# 목적: Python 버전 핀 명시 (핸드오프 작업-1 §2.2)
+[project]
+name = "steel-qto"
+version = "0.1.0"
+description = "건설 도면(DXF)에서 철골 부재 물량을 자동 산출하는 PoC"
+requires-python = ">=3.11,<3.12"
