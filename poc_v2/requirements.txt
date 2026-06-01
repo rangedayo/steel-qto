@@ -1,8 +1,8 @@
-# construction-ai-estimator — 직접 의존성 (transitive 는 pip 가 자동 해결)
+# construction-ai-estimator - 직접 의존성 (transitive 는 pip 가 자동 해결)
 # Python 3.11 전제 (.python-version / pyproject.toml requires-python 참조)
 #
-# 설치:  pip install -r poc_v2/requirements.txt   (repo 루트에서)
-# 회귀:  pytest poc_v2/                            # 234 passed / 2 known-fail(도면2 SC1·SC2)
+# 설치: pip install -r poc_v2/requirements.txt (repo 루트에서)
+# 회귀: pytest poc_v2/ # 234 passed / 2 known-fail (도면2 SC1-SC2)
 
 # --- 앱 + 시각화 (app.py / visualize_*.py 전용) ---
 streamlit==1.33.0
