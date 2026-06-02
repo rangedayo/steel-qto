@@ -1,0 +1,20 @@
+﻿도면1:
+  by_section:
+    1동:
+      skip: true
+      skip_reason: "1동에 기둥 길이를 산출할 수 있는 골구도/단면도 계열 시트가 없어 산출 대상에서 제외"
+    2동:
+      기둥:
+        MC1:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+        MC2:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+        MC3:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+        SC1:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+
