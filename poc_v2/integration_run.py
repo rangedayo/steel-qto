@@ -107,13 +107,39 @@ def _generate_plotly_div(drawing: str) -> str:
     except ImportError:
         return "<div style='padding:20px;color:red;'>시각화를 위한 모듈 임포트 실패 (plotly / ezdxf 필요)</div>"
 
+    # 1. 실제 QTO 계산에 활성화된(count_from) 시트명들을 수집
+    approved_yaml = Path(PROJECT_ROOT) / "outputs" / "llm_routing" / f"{drawing}_approved.yaml"
+    if not approved_yaml.exists():
+        approved_yaml = Path(PROJECT_ROOT) / "config" / "dedup_routing.yaml"
+
+    active_sheets = set()
+    try:
+        routes = routes_for_drawing(drawing, path=str(approved_yaml))
+        for r in routes:
+            if r.count_override is None and r.count_from:
+                active_sheets.add(r.count_from)
+    except Exception:
+        pass
+
     files = small_drawing_files(drawing)
     target_file = None
+
+    # 1순위: 계산에 실제로 쓰인 active_sheets와 매칭되는 count 시트 탐색
     for f in files:
         res = process_small_drawing(f)
-        if res.kind == "count":
+        if res.kind == "count" and res.matched_sheet in active_sheets:
             target_file = f
             break
+
+    # 2순위: (없으면) 기존처럼 첫 번째 count 시트 탐색
+    if not target_file:
+        for f in files:
+            res = process_small_drawing(f)
+            if res.kind == "count":
+                target_file = f
+                break
+
+    # 3순위: (그것도 없으면) 첫 번째 파일 fallback
     if not target_file and files:
         target_file = files[0]
 
