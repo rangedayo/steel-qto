@@ -1,3 +1,4 @@
+# coding: utf-8
 # construction-ai-estimator - 직접 의존성 (transitive 는 pip 가 자동 해결)
 # Python 3.11 전제 (.python-version / pyproject.toml requires-python 참조)
 #
@@ -16,3 +17,4 @@ plotly==6.7.0
 openpyxl==3.1.5
 pyyaml==6.0.3
 pytest==9.0.3
+jsonschema==4.26.0
