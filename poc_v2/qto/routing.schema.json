@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/routing.schema.json",
+  "title": "Steel QTO Routing",
+  "description": "LLM-generated routing YAML schema for steel quantity takeoff.",
+  "type": "object",
+  "propertyNames": {
+    "type": "string",
+    "minLength": 1
+  },
+  "additionalProperties": {
+    "$ref": "#/$defs/drawingRoute"
+  },
+  "$defs": {
+    "drawingRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "by_section": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/sectionRoute"
+          }
+        },
+        "\uae30\ub465": {
+          "$ref": "#/$defs/memberRoute"
+        },
+        "\ubcf4": {
+          "$ref": "#/$defs/memberRoute"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "by_section"
+          ]
+        },
+        {
+          "required": [
+            "\uae30\ub465"
+          ]
+        },
+        {
+          "required": [
+            "\ubcf4"
+          ]
+        }
+      ]
+    },
+    "sectionRoute": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/skipSection"
+        },
+        {
+          "$ref": "#/$defs/sectionMembers"
+        }
+      ]
+    },
+    "skipSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "skip": {
+          "const": true
+        },
+        "skip_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "skip",
+        "skip_reason"
+      ]
+    },
+    "sectionMembers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "\uae30\ub465": {
+          "$ref": "#/$defs/memberRoute"
+        },
+        "\ubcf4": {
+          "$ref": "#/$defs/memberRoute"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "\uae30\ub465"
+          ]
+        },
+        {
+          "required": [
+            "\ubcf4"
+          ]
+        }
+      ]
+    },
+    "memberRoute": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/symbolRoute"
+      }
+    },
+    "symbolRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "count_from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "count_override": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spec_from": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "spec_from"
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "count_from"
+          ],
+          "not": {
+            "required": [
+              "count_override"
+            ]
+          }
+        },
+        {
+          "required": [
+            "count_override"
+          ],
+          "not": {
+            "required": [
+              "count_from"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
