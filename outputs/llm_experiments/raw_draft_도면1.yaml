@@ -1,0 +1,19 @@
+도면1:
+  by_section:
+    1동:
+      skip: true
+      skip_reason: "1동에 골구도/입면도/단면도 시트 부재로 기둥 길이 산출 불가 (정답지 명시)"
+    2동:
+      기둥:
+        MC1:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+        MC2:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+        MC3:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+        SC1:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
