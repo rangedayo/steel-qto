@@ -5,7 +5,11 @@
 원본 설정 파일(config/dedup_routing.yaml)은 덮어쓰지 않고 독립적으로 동작합니다.
 
 사용법:
+    # 단일 도면 구동
     python -m poc_v2.integration_run 도면4 config/dedup_routing.yaml
+    
+    # 5장 전체 일괄 구동
+    python -m poc_v2.integration_run --all
 """
 from __future__ import annotations
 
@@ -33,6 +37,8 @@ from poc_v2.qto.weight_pipeline import (
     total_count,
     total_weight_kg,
 )
+
+ALL_DRAWINGS = ("도면1", "도면2", "도면3", "도면4", "도면5")
 
 # 1a 단일 도면 형식 (11열)
 _HEADER = [
@@ -69,7 +75,7 @@ def print_yaml_summary(drawing: str, yaml_path: Path) -> None:
     skips = skips_for_drawing(drawing, path=str(yaml_path))
 
     print("\n" + "=" * 60)
-    print(f" 🔍 [도면 분석 설정 요약] - {drawing}")
+    print(f" 🔍 [도면 분석 설정 요약] - {drawing} ({yaml_path.name})")
     print("=" * 60)
 
     if skips:
@@ -402,7 +408,7 @@ def run_for_drawing(drawing: str, llm_yaml_path: Path, output_dir: Path | None =
     try:
         _export_html_report(drawing, weight_rows, llm_yaml_path.name, base_out)
     except Exception as e:
-        print(f"[!] 시각화 HTML 보고서 생성 실패 (경고): {e}")
+        print(f"[!] 시각화 HTML 보고서 생성 실패 (경고) - {drawing}: {e}")
 
     return output_csv_path.resolve()
 
@@ -410,16 +416,101 @@ def run_for_drawing(drawing: str, llm_yaml_path: Path, output_dir: Path | None =
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="통합 실행 파이프라인 (사람4 - 안전 검사관)")
-    parser.add_argument("drawing", help="분석 대상 단일 도면명 (예: 도면4)")
-    parser.add_argument("llm_yaml", help="LLM이 생성한 YAML 초안 파일 경로")
+    parser.add_argument("drawing", nargs="?", default=None, help="분석 대상 단일 도면명 (예: 도면4)")
+    parser.add_argument("llm_yaml", nargs="?", default=None, help="LLM이 생성한 YAML 초안 파일 경로")
+    parser.add_argument("--all", action="store_true", help="전체 5장 도면 일괄 적산 수행")
+    parser.add_argument("--llm-dir", default="outputs/llm_routing", help="일괄 수행 시 LLM YAML 파일들의 디렉토리")
+    parser.add_argument("--approve", "-y", action="store_true", help="사용자 승인 게이트 우회 및 자동 승인")
     args = parser.parse_args()
 
+    # 인자 검증
+    if not args.all and (args.drawing is None or args.llm_yaml is None):
+        parser.print_help()
+        print("\n[!] 에러: 단일 도면을 실행하려면 도면명과 YAML 파일 경로를 위치 인자로 제공해야 하며, 전체를 실행하려면 --all 옵션을 제공해야 합니다.")
+        sys.exit(1)
+
+    # 1. 일괄 수행 모드 (--all)
+    if args.all:
+        llm_dir = Path(args.llm_dir)
+        print(f"[*] 전체 5장 도면 일괄 적산 수행 시작 (탐색 디렉토리: {llm_dir})")
+        
+        # 각 도면별 파일 매칭 및 1차 검증
+        target_yamls: dict[str, Path] = {}
+        for dwg in ALL_DRAWINGS:
+            # 1. outputs/llm_routing/도면X.yaml 탐색
+            dwg_yaml = llm_dir / f"{dwg}.yaml"
+            if not dwg_yaml.exists():
+                # 2. outputs/llm_routing/도면X_test.yaml 등 대안 탐색
+                dwg_yaml = llm_dir / f"{dwg}_test.yaml"
+            
+            if not dwg_yaml.exists():
+                # 3. 없으면 원본 정답지 config/dedup_routing.yaml 로 흉내 (Fallback)
+                fallback_yaml = Path(PROJECT_ROOT) / "config" / "dedup_routing.yaml"
+                print(f"  - 경고: {dwg}에 대한 YAML 초안이 없어 정답 설정({fallback_yaml.name})으로 흉내 냅니다.")
+                target_yamls[dwg] = fallback_yaml
+            else:
+                target_yamls[dwg] = dwg_yaml
+
+        # 스키마 1차 검증 일괄 수행
+        print("[*] 1단계: 전체 YAML 파일 스키마 일괄 검증 진행 중...")
+        validation_failed = False
+        for dwg, yaml_path in target_yamls.items():
+            is_valid, errors = validate_yaml_file(str(yaml_path))
+            if not is_valid:
+                print(f"  [!] {dwg} 검증 실패 ({yaml_path.name}):")
+                for err in errors:
+                    print(f"    - {err}")
+                validation_failed = True
+        
+        if validation_failed:
+            print("[!] 일부 YAML 파일 검증 실패로 인해 작업을 중단합니다.")
+            sys.exit(1)
+            
+        print("[+] 모든 YAML 파일 검증 완료!")
+
+        # 5장 요약 리스팅 출력
+        for dwg, yaml_path in target_yamls.items():
+            print_yaml_summary(dwg, yaml_path)
+
+        # 승인 게이트
+        if args.approve:
+            print("[*] 자동 승인 옵션(--approve)이 활성화되어 승인 단계를 건너뜁니다.")
+            user_input = "y"
+        else:
+            try:
+                user_input = input("[?] 위 설정대로 전체 5장 도면 일괄 적산을 진행하고 승인하시겠습니까? (y/N): ").strip().lower()
+            except KeyboardInterrupt:
+                print("\n[!] 사용자에 의해 중단되었습니다.")
+                sys.exit(1)
+
+        if user_input not in ("y", "yes"):
+            print("[!] 승인이 취소되었습니다. 일괄 처리를 중단합니다.")
+            sys.exit(0)
+
+        # 일괄 실행 구동
+        print("[*] 2단계: 전체 도면 일괄 적산 수행 중...")
+        success_count = 0
+        for dwg, yaml_path in target_yamls.items():
+            try:
+                print(f"  [*] {dwg} 진행 중... (입력: {yaml_path.name})")
+                csv_path = run_for_drawing(dwg, yaml_path)
+                html_path = csv_path.with_suffix(".html")
+                print(f"    [+] {dwg} CSV 완료 -> {csv_path.name}")
+                if html_path.exists():
+                    print(f"    [+] {dwg} HTML 완료 -> {html_path.name}")
+                success_count += 1
+            except Exception as e:
+                print(f"    [!] {dwg} 처리 중 에러 발생: {e}")
+        
+        print(f"\n[+] 일괄 작업 완료! (성공: {success_count}/{len(ALL_DRAWINGS)} 개)")
+        return
+
+    # 2. 단일 도면 수행 모드
     drawing = args.drawing
     yaml_path = Path(args.llm_yaml)
 
     print(f"[*] 단계 1: YAML 검증 시작 ({yaml_path})")
     
-    # 1. 1차 검증 (사용자 입력을 받기 전에 검증 에러 보고)
     is_valid, errors = validate_yaml_file(str(yaml_path))
     if not is_valid:
         print("[!] 검증 실패! 아래 에러 목록을 확인하고 수정해 주세요.")
@@ -432,11 +523,15 @@ def main() -> None:
     # 2. 검토 게이트
     print_yaml_summary(drawing, yaml_path)
     
-    try:
-        user_input = input("[?] 위 설정대로 베이스라인 계산을 진행하고 승인하시겠습니까? (y/N): ").strip().lower()
-    except KeyboardInterrupt:
-        print("\n[!] 사용자에 의해 중단되었습니다.")
-        sys.exit(1)
+    if args.approve:
+        print("[*] 자동 승인 옵션(--approve)이 활성화되어 승인 단계를 건너뜁니다.")
+        user_input = "y"
+    else:
+        try:
+            user_input = input("[?] 위 설정대로 베이스라인 계산을 진행하고 승인하시겠습니까? (y/N): ").strip().lower()
+        except KeyboardInterrupt:
+            print("\n[!] 사용자에 의해 중단되었습니다.")
+            sys.exit(1)
 
     if user_input not in ("y", "yes"):
         print("[!] 승인이 취소되었습니다. 파이프라인 작동을 중단합니다.")
