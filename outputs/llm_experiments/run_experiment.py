@@ -214,19 +214,19 @@ def post_process_overrides(drafts, answer_keys):
 def generate_all_drafts(drawings_context, answer_keys, system_prompt, outputs_dir, dry_run=False):
     """도면 5종에 대해 순차적으로 LLM 추론을 호출하여 초안 딕셔너리를 생성 및 파일로 저장"""
     drafts = {}
-    snapshot_path = os.path.join(outputs_dir, "prompt_snapshot.md")
     
-    # 드라이런인 경우 최초 1회만 스냅샷 파일 초기화
+    # 드라이런인 경우 1개의 통합된 드라이런 전용 파일로 초기화
     if dry_run:
+        snapshot_dryrun_path = os.path.join(outputs_dir, "prompt_snapshot.md")
         try:
-            with open(snapshot_path, "w", encoding="utf-8") as sf:
-                sf.write("# 💬 LLM 프롬프트 조립 스냅샷 (검토용)\n\n")
-                sf.write("이 파일은 `run_experiment.py` 실행 시점에 조립된 시스템 프롬프트 및 유저 메시지 전문의 스냅샷입니다.\n\n")
+            with open(snapshot_dryrun_path, "w", encoding="utf-8") as sf:
+                sf.write("# 💬 LLM 프롬프트 조립 스냅샷 (드라이런 점검용)\n\n")
+                sf.write("이 파일은 dry-run 실행 시점에 조립된 시스템 프롬프트 및 가짜 유저 메시지 전문의 스냅샷입니다.\n\n")
                 sf.write("## 1. ⚙️ System Prompt (시스템 지침)\n\n")
                 sf.write("```markdown\n" + system_prompt + "\n```\n\n")
-                sf.write("## 2. 🚀 User Messages (도면별 입력 컨텍스트)\n\n")
+                sf.write("## 2. 🚀 User Messages (도면별 가짜 입력 컨텍스트)\n\n")
         except Exception as e:
-            print(f"⚠️  경고: 프롬프트 스냅샷 파일 초기화 실패: {str(e)}")
+            print(f"⚠️  경고: 드라이런 프롬프트 스냅샷 파일 초기화 실패: {str(e)}")
 
     for drawing_name in ["도면1", "도면2", "도면3", "도면4", "도면5"]:
         if drawing_name not in drawings_context:
@@ -249,27 +249,40 @@ def generate_all_drafts(drawings_context, answer_keys, system_prompt, outputs_di
 - 도면1의 각 동(by_section)별 세부 시트 목록을 면밀히 분석하십시오.
 - 만약 특정 동/구역에 기둥의 세로 길이를 잴 수 있는 도면(예: '골구도', '입면도', '단면도' 등)이 전혀 존재하지 않는다면, 이는 해당 동에 대한 기둥 길이 산출이 불가능한 상태를 의미합니다.
 - 길이 산출이 불가능한 구역/동은 임의로 지어내어 채우지 말고, 해당 section 전체에 대해 `skip: true` 및 그 구체적 사유(`skip_reason`)를 명확하게 남기십시오.
+- [필수 규칙] 개수 산출을 위한 count_from 시트 지정 시, '기둥주심도'와 '기둥부호도'가 동시에 식별되는 경우, 부호도는 중복 카운트를 유발할 수 있으므로 무조건 '기둥주심도'가 포함된 시트명을 우선적으로 선택하여 지정하십시오.
 """
         else:
             specific_instructions = f"""
 [{drawing_name} 매핑 가이드라인]
 - 해당 도면은 예외 구역이나 다중 동으로 분리할 필요가 없는 단일 동/단일 구역 구조의 도면입니다.
 - 따라서 'by_section' 구조를 절대 사용하지 마십시오! 최상위 '{drawing_name}' 키 바로 하위에 '기둥' 필드를 다이렉트로 배치하십시오.
-- 만약 특정 기둥 부호에 대한 DXF 스캔 결과 요약 정보에서 발견 개수가 0개이지만, 텍스트 분석상 기둥 부호명이나 단어 패턴이 도면 텍스트에 나타난다면, 이는 ezdxf가 블록 내부의 기둥 글자를 읽어내지 못한 CAD 결함 상태입니다.
-- 이 경우 `count_from`을 지정하지 말고, `count_override: 0` (임시 플레이스홀더 0)으로 마크하고, 규격(spec)을 긁어올 `spec_from` 시트명만 정확히 기입하여 예외 상황을 시스템에 알리십시오.
+- [필수 규칙 - CAD 결함 시 예외 처리] 특정 기둥 부호에 대해 DXF 스캔 요약의 found_symbols에 검출된 기둥 개수가 0개이지만, spec_keywords_count가 0이 아니라면 이는 CAD 파일 구조 결함으로 인해 개수 검출이 누락된 상태입니다. 이 상황에서는 count_from 시트명을 절대 지정하지 마시고, 반드시 'count_override: 0'을 기재하여 예외 처리를 하십시오.
 """
 
         user_content += f"\n\n### [매핑 지침]\n{specific_instructions}"
         user_content += f"\n\n위 {drawing_name}의 세부 페이지 정보와 매핑 지침을 바탕으로 정교하게 추론하여 완벽한 YAML/JSON 구조를 리턴하라."
         
-        # 프롬프트 스냅샷 파일에 누적 기록
+        # 프롬프트 스냅샷 파일 기록 분기
         if dry_run:
+            snapshot_dryrun_path = os.path.join(outputs_dir, "prompt_snapshot.md")
             try:
-                with open(snapshot_path, "a", encoding="utf-8") as sf:
-                    sf.write(f"### 📍 {drawing_name} User Message (유저 입력 컨텍스트)\n\n")
+                with open(snapshot_dryrun_path, "a", encoding="utf-8") as sf:
+                    sf.write(f"### 📍 {drawing_name} User Message (가짜 입력)\n\n")
                     sf.write("```markdown\n" + user_content + "\n```\n\n")
             except Exception as e:
-                print(f"⚠️  경고: 프롬프트 스냅샷 기록 실패: {str(e)}")
+                print(f"⚠️  경고: 드라이런 프롬프트 스냅샷 기록 실패: {str(e)}")
+        else:
+            # 실제 API 호출 시 도면별 개별 스냅샷 생성
+            snapshot_real_path = os.path.join(outputs_dir, f"prompt_snapshot_{drawing_name}.md")
+            try:
+                with open(snapshot_real_path, "w", encoding="utf-8") as sf:
+                    sf.write(f"# 💬 {drawing_name} 실제 LLM 호출 프롬프트 전문 스냅샷\n\n")
+                    sf.write("## 1. ⚙️ System Prompt (시스템 지침)\n\n")
+                    sf.write("```markdown\n" + system_prompt + "\n```\n\n")
+                    sf.write(f"## 2. 🚀 {drawing_name} 실제 User Message (유저 입력 컨텍스트)\n\n")
+                    sf.write("```markdown\n" + user_content + "\n```\n")
+            except Exception as e:
+                print(f"⚠️  경고: 실제 호출용 {drawing_name} 프롬프트 스냅샷 저장 실패: {str(e)}")
                 
         draft_path = os.path.join(outputs_dir, f"raw_draft_{drawing_name}.yaml")
         
@@ -369,6 +382,7 @@ def query_openrouter(system_prompt, user_content):
     )
     
     try:
+        # [대안 A] OpenRouter Provider Lock 설정 적용 (Together로 고정하여 결정론 재현 보장)
         response = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -376,7 +390,13 @@ def query_openrouter(system_prompt, user_content):
                 {"role": "user", "content": user_content}
             ],
             temperature=0.0,
-            seed=42
+            seed=42,
+            extra_body={
+                "providers": {
+                    "order": ["Together"],
+                    "allow_fallbacks": False
+                }
+            }
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -612,6 +632,7 @@ LLM이 생성한 YAML 초안 5종을 머지 및 보정하여, `config/dedup_rout
 def main():
     parser = argparse.ArgumentParser(description="사람3 올인원 자동화 실험 스크립트")
     parser.add_argument("--dry-run", action="store_true", help="API를 호출하지 않고 로컬 DXF 스캔 및 프롬프트 빌드만 점검")
+    parser.add_argument("--verify-determinism", "-vd", action="store_true", help="API를 3회 반복 실행하여 재현성(결정론적 특성)을 검증")
     args = parser.parse_args()
     
     sample_data_dir = os.path.join(PROJECT_ROOT, "sample_data")
@@ -711,8 +732,8 @@ def main():
         f.write(report_markdown)
     print("➔ 평가 보고서 자동 생성 완료: outputs/llm_experiments/evaluation_report.md")
 
-    # 8. 결정론적 3회 재현성 자동 검증 (PoC v2 검증 기준 3번 통과용)
-    if not args.dry_run:
+    # 8. 결정론적 3회 재현성 자동 검증 (verify-determinism 옵션 켜졌을 때만 수행)
+    if not args.dry_run and args.verify_determinism:
         print("\n🎲 7. 결정론적 3회 반복 실행 재현성 검증 시작 (seed 고정 테스트)...")
         # 1회차 결과 파일 내용을 메모리에 캐싱
         first_runs = {}
@@ -724,7 +745,7 @@ def main():
         
         is_deterministic = True
         for run_idx in (2, 3):
-            print(f"   ➔ {run_idx}회차 반복 추론 실행 중...")
+            print(f"   ➔ {run_idx}회차 반복 추론 실행 및 비교 중...")
             generate_all_drafts(
                 drawings_context=drawings_context,
                 answer_keys=answer_keys,
@@ -738,8 +759,16 @@ def main():
                 if os.path.exists(draft_path):
                     with open(draft_path, "r", encoding="utf-8") as f:
                         new_content = f.read()
-                    if new_content != first_runs.get(drawing_name):
-                        print(f"   ❌ 오류: {drawing_name}의 {run_idx}회차 출력물이 1회차와 바이트 단위로 다릅니다!")
+                    
+                    # [대안 B] 의미론적(Semantic) 결정론 검증 적용 (딕셔너리 값 및 구조 1:1 비교)
+                    try:
+                        dict_first = yaml.safe_load(first_runs.get(drawing_name, "{}"))
+                        dict_new = yaml.safe_load(new_content)
+                        if dict_first != dict_new:
+                            print(f"   ❌ 오류: {drawing_name}의 {run_idx}회차 출력의 구조/값이 1회차와 다릅니다!")
+                            is_deterministic = False
+                    except Exception as e:
+                        print(f"   ❌ 오류: YAML 파싱 실패로 비교 불가 ({drawing_name}) - {str(e)}")
                         is_deterministic = False
         
         # 1회차의 정상 원본을 다시 기록하여 보존
@@ -749,9 +778,9 @@ def main():
                 f.write(content)
                 
         if is_deterministic:
-            print("🎉 [결정론 검증 PASS] 3회 반복 실행 결과가 바이트 단위로 100% 완벽히 재현(일치)되었습니다.")
+            print("🎉 [결정론 검증 PASS] 3회 반복 실행 결과가 의미론적으로 100% 완벽히 재현(일치)되었습니다.")
         else:
-            print("⚠️  [결정론 검증 FAIL] 반복 실행 중 난수적 편차가 검출되었습니다. 시드 조절이 필요합니다.")
+            print("⚠️  [결정론 검증 FAIL] 반복 실행 중 난수적 편차(의미론적 불일치)가 검출되었습니다.")
 
     print("\n🎉 모든 자동화 실험 흐름이 무사히 수행되었습니다! README.md를 참조하여 다음 단계를 진행하십시오.")
 

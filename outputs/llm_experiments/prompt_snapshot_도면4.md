@@ -1,6 +1,4 @@
-# 💬 LLM 프롬프트 조립 스냅샷 (드라이런 점검용)
-
-이 파일은 dry-run 실행 시점에 조립된 시스템 프롬프트 및 가짜 유저 메시지 전문의 스냅샷입니다.
+# 💬 도면4 실제 LLM 호출 프롬프트 전문 스냅샷
 
 ## 1. ⚙️ System Prompt (시스템 지침)
 
@@ -547,647 +545,167 @@ LLM이 만든 YAML은 최종 산출 전에 다음을 확인해야 한다.
 
 ```
 
-## 2. 🚀 User Messages (도면별 가짜 입력 컨텍스트)
-
-### 📍 도면1 User Message (가짜 입력)
-
-```markdown
-### 도면1 세부 도면 요약 정보 목록:
-{
-  "1동_1~3층기둥부호도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "1동_1~3층기둥주심도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "1동_2층바닥보복도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "1동_3층바닥보복도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "1동_기초구조도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "1동_옥상바닥보복도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "1동_옥상층기둥부호도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "1동_옥상층기둥주심도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_SL+4.0M구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_SL+4.7M구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_Y01열골구도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_Y03Y05열골구도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_Y03열골구도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_Y05열골구도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_기둥부호도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_기둥주심도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_기초구조도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2동_지붕구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "MC1": 5,
-      "MC2": 5,
-      "MC3": 5,
-      "SC1": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  }
-}
-
-### [참고 지침] CAD 결함 판단 및 override 폴백 안내:
-만약 세부 도면 분석 데이터 상에서 특정 기둥 부호의 발견 수량이 0개이나, 해당 기둥 부호에 대한 정보가 텍스트 분포 상에 실재한다면, count_from을 지정하지 말고 count_override: 0 으로 지정하십시오. 이 경우 spec_from은 일람표 규격이 존재하는 시트명을 정상 지정하십시오.
-
-### [매핑 지침]
-
-[도면1 매핑 가이드라인]
-- 도면1의 각 동(by_section)별 세부 시트 목록을 면밀히 분석하십시오.
-- 만약 특정 동/구역에 기둥의 세로 길이를 잴 수 있는 도면(예: '골구도', '입면도', '단면도' 등)이 전혀 존재하지 않는다면, 이는 해당 동에 대한 기둥 길이 산출이 불가능한 상태를 의미합니다.
-- 길이 산출이 불가능한 구역/동은 임의로 지어내어 채우지 말고, 해당 section 전체에 대해 `skip: true` 및 그 구체적 사유(`skip_reason`)를 명확하게 남기십시오.
-- [필수 규칙] 개수 산출을 위한 count_from 시트 지정 시, '기둥주심도'와 '기둥부호도'가 동시에 식별되는 경우, 부호도는 중복 카운트를 유발할 수 있으므로 무조건 '기둥주심도'가 포함된 시트명을 우선적으로 선택하여 지정하십시오.
-
-
-위 도면1의 세부 페이지 정보와 매핑 지침을 바탕으로 정교하게 추론하여 완벽한 YAML/JSON 구조를 리턴하라.
-```
-
-### 📍 도면2 User Message (가짜 입력)
-
-```markdown
-### 도면2 세부 도면 요약 정보 목록:
-{
-  "가나동1층구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "가나동정면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "가나동정면도좌측면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "가나동종단면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "가나동좌측면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "가나동지붕구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "가나동횡단면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  }
-}
-
-### [참고 지침] CAD 결함 판단 및 override 폴백 안내:
-만약 세부 도면 분석 데이터 상에서 특정 기둥 부호의 발견 수량이 0개이나, 해당 기둥 부호에 대한 정보가 텍스트 분포 상에 실재한다면, count_from을 지정하지 말고 count_override: 0 으로 지정하십시오. 이 경우 spec_from은 일람표 규격이 존재하는 시트명을 정상 지정하십시오.
-
-### [매핑 지침]
-
-[도면2 매핑 가이드라인]
-- 해당 도면은 예외 구역이나 다중 동으로 분리할 필요가 없는 단일 동/단일 구역 구조의 도면입니다.
-- 따라서 'by_section' 구조를 절대 사용하지 마십시오! 최상위 '도면2' 키 바로 하위에 '기둥' 필드를 다이렉트로 배치하십시오.
-- [필수 규칙 - CAD 결함 시 예외 처리] 특정 기둥 부호에 대해 DXF 스캔 요약의 found_symbols에 검출된 기둥 개수가 0개이지만, spec_keywords_count가 0이 아니라면 이는 CAD 파일 구조 결함으로 인해 개수 검출이 누락된 상태입니다. 이 상황에서는 count_from 시트명을 절대 지정하지 마시고, 반드시 'count_override: 0'을 기재하여 예외 처리를 하십시오.
-
-
-위 도면2의 세부 페이지 정보와 매핑 지침을 바탕으로 정교하게 추론하여 완벽한 YAML/JSON 구조를 리턴하라.
-```
-
-### 📍 도면3 User Message (가짜 입력)
-
-```markdown
-### 도면3 세부 도면 요약 정보 목록:
-{
-  "1층바닥구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2층바닥구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "계단단면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "배면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "배면도우측면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "우측면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "종단면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "종단면도계단단면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "중간1층바닥구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "지붕층구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  }
-}
-
-### [참고 지침] CAD 결함 판단 및 override 폴백 안내:
-만약 세부 도면 분석 데이터 상에서 특정 기둥 부호의 발견 수량이 0개이나, 해당 기둥 부호에 대한 정보가 텍스트 분포 상에 실재한다면, count_from을 지정하지 말고 count_override: 0 으로 지정하십시오. 이 경우 spec_from은 일람표 규격이 존재하는 시트명을 정상 지정하십시오.
-
-### [매핑 지침]
-
-[도면3 매핑 가이드라인]
-- 해당 도면은 예외 구역이나 다중 동으로 분리할 필요가 없는 단일 동/단일 구역 구조의 도면입니다.
-- 따라서 'by_section' 구조를 절대 사용하지 마십시오! 최상위 '도면3' 키 바로 하위에 '기둥' 필드를 다이렉트로 배치하십시오.
-- [필수 규칙 - CAD 결함 시 예외 처리] 특정 기둥 부호에 대해 DXF 스캔 요약의 found_symbols에 검출된 기둥 개수가 0개이지만, spec_keywords_count가 0이 아니라면 이는 CAD 파일 구조 결함으로 인해 개수 검출이 누락된 상태입니다. 이 상황에서는 count_from 시트명을 절대 지정하지 마시고, 반드시 'count_override: 0'을 기재하여 예외 처리를 하십시오.
-
-
-위 도면3의 세부 페이지 정보와 매핑 지침을 바탕으로 정교하게 추론하여 완벽한 YAML/JSON 구조를 리턴하라.
-```
-
-### 📍 도면4 User Message (가짜 입력)
+## 2. 🚀 도면4 실제 User Message (유저 입력 컨텍스트)
 
 ```markdown
 ### 도면4 세부 도면 요약 정보 목록:
 {
   "1층구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
+    "total_texts": 84,
+    "spec_keywords_count": 18,
     "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
+      "SC2": 9,
+      "SC1": 29
     },
     "text_height_distribution": {
-      "min": 150,
-      "max": 300
+      "min": 50.0,
+      "max": 200.0,
+      "most_common": [
+        [
+          100.0,
+          35
+        ],
+        [
+          150.0,
+          23
+        ]
+      ]
     }
   },
   "배면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
+    "total_texts": 89,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
     "text_height_distribution": {
-      "min": 150,
-      "max": 300
+      "min": 77.777778,
+      "max": 373.333333,
+      "most_common": [
+        [
+          100.0,
+          35
+        ],
+        [
+          166.666667,
+          20
+        ]
+      ]
     }
   },
   "배면도우측면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
+    "total_texts": 105,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
     "text_height_distribution": {
-      "min": 150,
-      "max": 300
+      "min": 77.777778,
+      "max": 373.333333,
+      "most_common": [
+        [
+          100.0,
+          35
+        ],
+        [
+          180.0,
+          25
+        ]
+      ]
     }
   },
   "우측면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
+    "total_texts": 82,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
     "text_height_distribution": {
-      "min": 150,
-      "max": 300
+      "min": 77.777778,
+      "max": 373.333333,
+      "most_common": [
+        [
+          100.0,
+          35
+        ],
+        [
+          166.666667,
+          20
+        ]
+      ]
     }
   },
   "종단면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
+    "total_texts": 97,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
     "text_height_distribution": {
-      "min": 150,
-      "max": 300
+      "min": 40.0,
+      "max": 450.0,
+      "most_common": [
+        [
+          100.0,
+          35
+        ],
+        [
+          180.0,
+          30
+        ]
+      ]
     }
   },
   "종단면도횡단면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
+    "total_texts": 137,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
     "text_height_distribution": {
-      "min": 150,
-      "max": 300
+      "min": 40.0,
+      "max": 450.0,
+      "most_common": [
+        [
+          180.0,
+          64
+        ],
+        [
+          100.0,
+          35
+        ]
+      ]
     }
   },
   "지붕층구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
+    "total_texts": 67,
+    "spec_keywords_count": 0,
     "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
+      "SC1": 1,
+      "SC2": 1
     },
     "text_height_distribution": {
-      "min": 150,
-      "max": 300
+      "min": 100.0,
+      "max": 200.0,
+      "most_common": [
+        [
+          100.0,
+          35
+        ],
+        [
+          150.0,
+          25
+        ]
+      ]
     }
   },
   "횡단면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "SC1": 5,
-      "SC2": 5
-    },
+    "total_texts": 95,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
     "text_height_distribution": {
-      "min": 150,
-      "max": 300
+      "min": 100.0,
+      "max": 373.333333,
+      "most_common": [
+        [
+          100.0,
+          35
+        ],
+        [
+          180.0,
+          34
+        ]
+      ]
     }
   }
 }
@@ -1205,151 +723,3 @@ LLM이 만든 YAML은 최종 산출 전에 다음을 확인해야 한다.
 
 위 도면4의 세부 페이지 정보와 매핑 지침을 바탕으로 정교하게 추론하여 완벽한 YAML/JSON 구조를 리턴하라.
 ```
-
-### 📍 도면5 User Message (가짜 입력)
-
-```markdown
-### 도면5 세부 도면 요약 정보 목록:
-{
-  "1층바닥구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "2층바닥구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "Y1축열골조도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "우측면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "정면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "정면도우측면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "주단면도1": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "주단면도4": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  },
-  "지붕층바닥구조평면도": {
-    "total_texts": 50,
-    "spec_keywords_count": 2,
-    "found_symbols": {
-      "C1": 5,
-      "C2": 5,
-      "C3": 5,
-      "C4": 5
-    },
-    "text_height_distribution": {
-      "min": 150,
-      "max": 300
-    }
-  }
-}
-
-### [참고 지침] CAD 결함 판단 및 override 폴백 안내:
-만약 세부 도면 분석 데이터 상에서 특정 기둥 부호의 발견 수량이 0개이나, 해당 기둥 부호에 대한 정보가 텍스트 분포 상에 실재한다면, count_from을 지정하지 말고 count_override: 0 으로 지정하십시오. 이 경우 spec_from은 일람표 규격이 존재하는 시트명을 정상 지정하십시오.
-
-### [매핑 지침]
-
-[도면5 매핑 가이드라인]
-- 해당 도면은 예외 구역이나 다중 동으로 분리할 필요가 없는 단일 동/단일 구역 구조의 도면입니다.
-- 따라서 'by_section' 구조를 절대 사용하지 마십시오! 최상위 '도면5' 키 바로 하위에 '기둥' 필드를 다이렉트로 배치하십시오.
-- [필수 규칙 - CAD 결함 시 예외 처리] 특정 기둥 부호에 대해 DXF 스캔 요약의 found_symbols에 검출된 기둥 개수가 0개이지만, spec_keywords_count가 0이 아니라면 이는 CAD 파일 구조 결함으로 인해 개수 검출이 누락된 상태입니다. 이 상황에서는 count_from 시트명을 절대 지정하지 마시고, 반드시 'count_override: 0'을 기재하여 예외 처리를 하십시오.
-
-
-위 도면5의 세부 페이지 정보와 매핑 지침을 바탕으로 정교하게 추론하여 완벽한 YAML/JSON 구조를 리턴하라.
-```
-

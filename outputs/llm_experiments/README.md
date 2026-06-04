@@ -23,7 +23,11 @@
 * `README.md` : 이 가이드 문서 (성과 요약 및 실행 안내)
 * `run_experiment.py` : 올인원 자동화 실험, 동적 힌트 주입 및 1:1 대조 평가 스크립트
 * `raw_draft_도면N.yaml` : LLM이 뱉은 도면별 임시 YAML 초안 (API 호출 시 자동 생성)
-* `symbol_rules.yaml` ~ `dedup_routing.yaml` : 규칙별 최종 머지 통합 yaml 4종
+* **[검증 목적 임시 파일 4종]** (사람3이 채점/평가 대조를 위해 임시로 자동 생성하는 머지 결과물이며, 본선 통합 시 사람4의 통합 파이프라인 연계 영역입니다.):
+  * `outputs/llm_experiments/dedup_routing.yaml` (중복 판별 라우팅)
+  * `outputs/llm_experiments/length_routing.yaml` (길이 측정 라우팅)
+  * `outputs/llm_experiments/sheet_name_overrides.yaml` (시트명 오버라이드)
+  * `outputs/llm_experiments/symbol_rules.yaml` (부호 필터 룰)
 * `evaluation_report.md` : 정답지(`config/dedup_routing.yaml`)와 비교하여 1초 만에 자동 생성되는 최종 평가표
 
 ---
@@ -49,10 +53,18 @@
    python outputs/llm_experiments/run_experiment.py --dry-run
    ```
 
-4. **실제 실험 및 평가 실행**:
+4. **실제 실험 및 평가 실행 (기본 1회 호출)**:
    실제 5-Batch 호출을 진행해 yaml을 병합 생성하고 정답 대조 마크다운 보고서까지 자동으로 생성합니다.
    ```bash
    python outputs/llm_experiments/run_experiment.py
+   ```
+
+5. **결정론적 재현성 검증 실행 (3회 반복 호출)**:
+   동일한 LLM 입력을 3회 연속 호출하여 출력의 일치성(재현성)을 검사합니다. 개발 중 불필요한 API 비용 낭비를 예방하기 위해 CLI 옵션으로 완전히 격리 분리되었습니다.
+   ```bash
+   python outputs/llm_experiments/run_experiment.py --verify-determinism
+   # 또는 단축형
+   python outputs/llm_experiments/run_experiment.py -vd
    ```
 
 ---

@@ -6,16 +6,16 @@
     2동:
       기둥:
         MC1:
-          count_from: 2동_기둥부호도
+          count_from: 2동_기둥주심도
           spec_from: 2동_기둥주심도
         MC2:
-          count_from: 2동_기둥부호도
+          count_from: 2동_기둥주심도
           spec_from: 2동_기둥주심도
         MC3:
-          count_from: 2동_기둥부호도
+          count_from: 2동_기둥주심도
           spec_from: 2동_기둥주심도
         SC1:
-          count_from: 2동_기둥부호도
+          count_from: 2동_기둥주심도
           spec_from: 2동_기둥주심도
 도면2:
   기둥:
@@ -29,7 +29,16 @@
   기둥:
     C1:
       count_from: 1층바닥구조평면도
-      spec_from: 중간1층바닥구조평면도
+      spec_from: 1층바닥구조평면도
+    C2:
+      count_from: 1층바닥구조평면도
+      spec_from: 1층바닥구조평면도
+    C3:
+      count_from: 1층바닥구조평면도
+      spec_from: 1층바닥구조평면도
+    C4:
+      count_from: 1층바닥구조평면도
+      spec_from: 1층바닥구조평면도
 도면4:
   기둥:
     SC1:
