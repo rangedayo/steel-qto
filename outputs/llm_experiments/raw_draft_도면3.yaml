@@ -1,14 +1,5 @@
 도면3:
   기둥:
     C1:
-      count_from: "1층바닥 구조평면도"
-      spec_from: "1층바닥 구조평면도"
-    C2:
-      count_from: "1층바닥 구조평면도"
-      spec_from: "1층바닥 구조평면도"
-    C3:
-      count_from: "1층바닥 구조평면도"
-      spec_from: "1층바닥 구조평면도"
-    C4:
-      count_from: "1층바닥 구조평면도"
-      spec_from: "1층바닥 구조평면도"
+      count_from: "1층바닥구조평면도"
+      spec_from: "중간1층바닥구조평면도"
