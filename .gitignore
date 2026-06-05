@@ -1,3 +1,6 @@
+# 대상 제외
+outputs/
+
 # 환경
 .venv/
 __pycache__/
