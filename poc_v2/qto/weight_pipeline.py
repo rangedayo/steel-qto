@@ -194,21 +194,39 @@ def build_default_providers() -> tuple[CountProvider, LengthProvider,
         return _count_cache[drawing]
 
     def count_provider(drawing: str, sheet: str, symbol: str) -> int:
-        result = _count_results_by_sheet(drawing).get(sheet)
+        from poc_v2.baseline2.sheet_name_matcher import normalize  # noqa: PLC0415
+        by_sheet = _count_results_by_sheet(drawing)
+        result = by_sheet.get(sheet)
+        if result is None:
+            # 2. 정규화 매칭 시도 (언더스코어 제거 적용)
+            norm_sheet = normalize(sheet.replace("_", ""))
+            for raw_sheet, res in by_sheet.items():
+                if normalize(raw_sheet.replace("_", "")) == norm_sheet:
+                    result = res
+                    break
         if result is None:
             raise ValueError(
                 f"{drawing}: dedup count_from 시트 {sheet!r} 의 count 결과 없음 "
-                f"(가능: {sorted(_count_results_by_sheet(drawing))})"
+                f"(가능: {sorted(by_sheet)})"
             )
         return int(result.counts.get(symbol, 0))
 
     def _specs_for_sheet(drawing: str, sheet: str) -> dict[str, str]:
         """spec_from 시트의 dxf 에서 부호→정규화규격 (캐시)."""
-        result = _count_results_by_sheet(drawing).get(sheet)
+        from poc_v2.baseline2.sheet_name_matcher import normalize  # noqa: PLC0415
+        by_sheet = _count_results_by_sheet(drawing)
+        result = by_sheet.get(sheet)
+        if result is None:
+            # 2. 정규화 매칭 시도 (언더스코어 제거 적용)
+            norm_sheet = normalize(sheet.replace("_", ""))
+            for raw_sheet, res in by_sheet.items():
+                if normalize(raw_sheet.replace("_", "")) == norm_sheet:
+                    result = res
+                    break
         if result is None:
             raise ValueError(
                 f"{drawing}: dedup spec_from 시트 {sheet!r} 결과 없음 "
-                f"(가능: {sorted(_count_results_by_sheet(drawing))})"
+                f"(가능: {sorted(by_sheet)})"
             )
         key = (drawing, result.file_path)
         if key not in _spec_cache:

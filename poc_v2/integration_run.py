@@ -124,12 +124,17 @@ def _generate_plotly_div(drawing: str) -> str:
     files = small_drawing_files(drawing)
     target_file = None
 
-    # 1순위: 계산에 실제로 쓰인 active_sheets와 매칭되는 count 시트 탐색
+    # 1순위: 계산에 실제로 쓰인 active_sheets와 매칭되는 count 시트 탐색 (정규화 매칭 적용)
+    from poc_v2.baseline2.sheet_name_matcher import normalize
+    norm_active_sheets = {normalize(s.replace("_", "")) for s in active_sheets}
+
     for f in files:
         res = process_small_drawing(f)
-        if res.kind == "count" and res.matched_sheet in active_sheets:
-            target_file = f
-            break
+        if res.kind == "count":
+            norm_matched = normalize(res.matched_sheet.replace("_", "")) if res.matched_sheet else ""
+            if norm_matched in norm_active_sheets:
+                target_file = f
+                break
 
     # 2순위: (없으면) 기존처럼 첫 번째 count 시트 탐색
     if not target_file:
@@ -445,7 +450,7 @@ def main() -> None:
     parser.add_argument("drawing", nargs="?", default=None, help="분석 대상 단일 도면명 (예: 도면4)")
     parser.add_argument("llm_yaml", nargs="?", default=None, help="LLM이 생성한 YAML 초안 파일 경로")
     parser.add_argument("--all", action="store_true", help="전체 5장 도면 일괄 적산 수행")
-    parser.add_argument("--llm-dir", default="outputs/llm_routing", help="일괄 수행 시 LLM YAML 파일들의 디렉토리")
+    parser.add_argument("--llm-dir", default="outputs/llm_experiments", help="일괄 수행 시 LLM YAML 파일들의 디렉토리")
     parser.add_argument("--approve", "-y", action="store_true", help="사용자 승인 게이트 우회 및 자동 승인")
     args = parser.parse_args()
 
@@ -460,22 +465,14 @@ def main() -> None:
         llm_dir = Path(args.llm_dir)
         print(f"[*] 전체 5장 도면 일괄 적산 수행 시작 (탐색 디렉토리: {llm_dir})")
         
-        # 각 도면별 파일 매칭 및 1차 검증
+        # 각 도면별 파일 매칭 및 1차 검증 (오직 1순위 raw_draft_도면X.yaml 만 엄격히 유지)
         target_yamls: dict[str, Path] = {}
         for dwg in ALL_DRAWINGS:
-            # 1. outputs/llm_routing/도면X.yaml 탐색
-            dwg_yaml = llm_dir / f"{dwg}.yaml"
+            dwg_yaml = llm_dir / f"raw_draft_{dwg}.yaml"
             if not dwg_yaml.exists():
-                # 2. outputs/llm_routing/도면X_test.yaml 등 대안 탐색
-                dwg_yaml = llm_dir / f"{dwg}_test.yaml"
-            
-            if not dwg_yaml.exists():
-                # 3. 없으면 원본 정답지 config/dedup_routing.yaml 로 흉내 (Fallback)
-                fallback_yaml = Path(PROJECT_ROOT) / "config" / "dedup_routing.yaml"
-                print(f"  - 경고: {dwg}에 대한 YAML 초안이 없어 정답 설정({fallback_yaml.name})으로 흉내 냅니다.")
-                target_yamls[dwg] = fallback_yaml
-            else:
-                target_yamls[dwg] = dwg_yaml
+                print(f"[!] 에러: 필수 YAML 초안 파일이 존재하지 않습니다: {dwg_yaml}")
+                sys.exit(1)
+            target_yamls[dwg] = dwg_yaml
 
         # 스키마 1차 검증 일괄 수행
         print("[*] 1단계: 전체 YAML 파일 스키마 일괄 검증 진행 중...")
