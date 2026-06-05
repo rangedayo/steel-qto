@@ -1,0 +1,18 @@
+auto_policy_params:
+  spec_pattern_threshold: 0.3
+policy_override: {}
+table_region_detection:
+  max_count_per_symbol: 2
+  min_distinct_symbols: 4
+  region_size_ratio: 0.03333
+text_height_filter:
+  도면1:
+    min_height: 250.0
+  도면2:
+    min_height: 250.0
+  도면3:
+    min_height: null
+  도면4:
+    min_height: null
+  도면5:
+    min_height: null

@@ -1,0 +1,8 @@
+도면4:
+  기둥:
+    SC1:
+      count_from: "1층구조평면도"
+      spec_from: "1층구조평면도"
+    SC2:
+      count_from: "1층구조평면도"
+      spec_from: "1층구조평면도"
