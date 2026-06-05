@@ -1,6 +1,6 @@
 """기둥 총중량 곱셈 파이프라인 — 라운드 중량-1a/1b.
 
-곱셈 = 개수 × 길이 × 단위중량. 측정 3종(카운트·길이·규격) 은 baseline-1~7
+곱셈 = 개수 x 길이 x 단위중량. 측정 3종(카운트·길이·규격) 은 baseline-1~7
 에서 이미 PASS 했고, 본 모듈은 그 측정 결과를 **소비** 만 한다 (측정 모듈
 회귀에 영향 0).
 
@@ -194,21 +194,39 @@ def build_default_providers() -> tuple[CountProvider, LengthProvider,
         return _count_cache[drawing]
 
     def count_provider(drawing: str, sheet: str, symbol: str) -> int:
-        result = _count_results_by_sheet(drawing).get(sheet)
+        from poc_v2.baseline2.sheet_name_matcher import normalize  # noqa: PLC0415
+        by_sheet = _count_results_by_sheet(drawing)
+        result = by_sheet.get(sheet)
+        if result is None:
+            # 2. 정규화 매칭 시도 (언더스코어 제거 적용)
+            norm_sheet = normalize(sheet.replace("_", ""))
+            for raw_sheet, res in by_sheet.items():
+                if normalize(raw_sheet.replace("_", "")) == norm_sheet:
+                    result = res
+                    break
         if result is None:
             raise ValueError(
                 f"{drawing}: dedup count_from 시트 {sheet!r} 의 count 결과 없음 "
-                f"(가능: {sorted(_count_results_by_sheet(drawing))})"
+                f"(가능: {sorted(by_sheet)})"
             )
         return int(result.counts.get(symbol, 0))
 
     def _specs_for_sheet(drawing: str, sheet: str) -> dict[str, str]:
         """spec_from 시트의 dxf 에서 부호→정규화규격 (캐시)."""
-        result = _count_results_by_sheet(drawing).get(sheet)
+        from poc_v2.baseline2.sheet_name_matcher import normalize  # noqa: PLC0415
+        by_sheet = _count_results_by_sheet(drawing)
+        result = by_sheet.get(sheet)
+        if result is None:
+            # 2. 정규화 매칭 시도 (언더스코어 제거 적용)
+            norm_sheet = normalize(sheet.replace("_", ""))
+            for raw_sheet, res in by_sheet.items():
+                if normalize(raw_sheet.replace("_", "")) == norm_sheet:
+                    result = res
+                    break
         if result is None:
             raise ValueError(
                 f"{drawing}: dedup spec_from 시트 {sheet!r} 결과 없음 "
-                f"(가능: {sorted(_count_results_by_sheet(drawing))})"
+                f"(가능: {sorted(by_sheet)})"
             )
         key = (drawing, result.file_path)
         if key not in _spec_cache:

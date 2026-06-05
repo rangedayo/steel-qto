@@ -63,9 +63,27 @@ def _add_geometry(fig: go.Figure, dxf_path: str) -> None:
 
 def _add_count_overlay(fig: go.Figure, dxf_path: str, columns: list[str]) -> None:
     """기둥 부호 hit 좌표를 녹색 마커로."""
+    from poc_v2.baseline2.small_drawing_pipeline import drawing_from_path
+    from auto_policy import auto_detect_policy
+    from ground_truth import load_policy_override, load_text_height_filter, load_auto_policy_params
+
+    drawing = drawing_from_path(dxf_path)
+    min_h = load_text_height_filter().get(drawing)
+
+    override = load_policy_override(drawing)
+    if override is not None:
+        exclude_with_spec = override["exclude_with_spec"]
+    else:
+        auto = auto_detect_policy(
+            dxf_path, columns, min_text_height=min_h, **load_auto_policy_params()
+        )
+        exclude_with_spec = auto["exclude_with_spec"]
+
     _counts, hits, _coords = count_members(
         dxf_path, *_FULL_EXTENT, custom_whitelist=columns,
-        exclude_with_spec=True, treat_slash_as_combo=True,
+        min_text_height=min_h,
+        exclude_with_spec=exclude_with_spec,
+        treat_slash_as_combo=True,
     )
     xs = [h[0] for h in hits]
     ys = [h[1] for h in hits]
