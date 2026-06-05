@@ -1,5 +1,5 @@
 # 대상 제외
-outputs/
+# outputs/
 
 # 환경
 .venv/

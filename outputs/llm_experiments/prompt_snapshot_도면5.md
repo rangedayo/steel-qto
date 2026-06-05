@@ -1,3 +1,14 @@
+# 💬 도면5 실제 LLM 호출 프롬프트 전문 스냅샷
+
+## 1. ⚙️ System Prompt (시스템 지침)
+
+```markdown
+너는 건설 도면(DXF) 분석을 통해 철골 기둥의 물량을 최적으로 산출하도록 YAML 라우팅을 매핑하는 AI 적산 전문가다.
+우리는 대형 원본 도면을 분석하기 용이하도록 개별 시트(세부 도면) 단위로 쪼개어 분석했다.
+네 임무는 주어진 세부 도면들의 요약 리스트 정보를 분석하고, 아래 도메인 규칙서와 출력 JSON 스키마를 철저히 지키며 최적의 라우팅 구조를 추론해내는 것이다.
+
+---
+[도메인 규칙서 (docs/domain_rules.md)]
 # 철골기둥 YAML 라우팅 도메인 규칙서
 
 작성일: 2026-06-01
@@ -330,3 +341,403 @@ LLM이 만든 YAML은 최종 산출 전에 다음을 확인해야 한다.
 좋은 YAML은 많은 값을 적는 YAML이 아니라, 어떤 시트를 왜 채택했는지가 분명한 YAML이다.
 사람1의 산출물은 그 판단 기준을 고정하는 교재이며, 이후 사람3의 프롬프트와 사람4의 검증 코드는 이 문서를 기준으로 움직인다.
 
+
+
+---
+[출력 검증용 JSON 스키마 (routing.schema.json)]
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/routing.schema.json",
+  "title": "Steel QTO Routing",
+  "description": "LLM-generated routing YAML schema for steel quantity takeoff.",
+  "type": "object",
+  "propertyNames": {
+    "type": "string",
+    "minLength": 1
+  },
+  "additionalProperties": {
+    "$ref": "#/$defs/drawingRoute"
+  },
+  "$defs": {
+    "drawingRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "by_section": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/sectionRoute"
+          }
+        },
+        "\uae30\ub465": {
+          "$ref": "#/$defs/memberRoute"
+        },
+        "\ubcf4": {
+          "$ref": "#/$defs/memberRoute"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "by_section"
+          ]
+        },
+        {
+          "required": [
+            "\uae30\ub465"
+          ]
+        },
+        {
+          "required": [
+            "\ubcf4"
+          ]
+        }
+      ]
+    },
+    "sectionRoute": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/skipSection"
+        },
+        {
+          "$ref": "#/$defs/sectionMembers"
+        }
+      ]
+    },
+    "skipSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "skip": {
+          "const": true
+        },
+        "skip_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "skip",
+        "skip_reason"
+      ]
+    },
+    "sectionMembers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "\uae30\ub465": {
+          "$ref": "#/$defs/memberRoute"
+        },
+        "\ubcf4": {
+          "$ref": "#/$defs/memberRoute"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "\uae30\ub465"
+          ]
+        },
+        {
+          "required": [
+            "\ubcf4"
+          ]
+        }
+      ]
+    },
+    "memberRoute": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/symbolRoute"
+      }
+    },
+    "symbolRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "count_from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "count_override": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spec_from": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "spec_from"
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "count_from"
+          ],
+          "not": {
+            "required": [
+              "count_override"
+            ]
+          }
+        },
+        {
+          "required": [
+            "count_override"
+          ],
+          "not": {
+            "required": [
+              "count_from"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+---
+[모범 예시 (docs/example.yaml - Few-shot)]
+```yaml
+﻿도면1:
+  by_section:
+    1동:
+      skip: true
+      skip_reason: "1동에 기둥 길이를 산출할 수 있는 골구도/단면도 계열 시트가 없어 산출 대상에서 제외"
+    2동:
+      기둥:
+        MC1:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+        MC2:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+        MC3:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+        SC1:
+          count_from: "(2동)기둥주심도"
+          spec_from: "(2동)기둥주심도"
+
+
+```
+
+---
+[출력 태도 및 지침]
+1. 수학적인 개수 계산이나 중량 산출은 네가 하지 마라. 너는 오직 '판단'과 '선택'만 내리면 된다.
+2. YAML 구조는 반드시 스키마 검증을 완벽하게 통과해야 한다.
+3. YAML의 키로 '기둥'이나 '보' 같은 한글을 쓸 경우, 스키마에 정의된 대로 유효한 문자열 구조를 갖춰라.
+4. count_from 과 count_override 는 상호 배타적이다(oneOf). 즉, count_from을 쓸 거면 count_override를 절대 쓰면 안 되고, 그 반대도 마찬가지다. spec_from은 항상 필수(required)다.
+5. skip 처리 시에는 반드시 skip_reason 에 그 구체적이고 타당한 이유를 한국어 자연어로 기록하라.
+6. 응답은 다른 잡설이나 설명 없이 오직 완성된 YAML/JSON 코드 블록만 뱉어라.
+
+```
+
+## 2. 🚀 도면5 실제 User Message (유저 입력 컨텍스트)
+
+```markdown
+### 도면5 세부 도면 요약 정보 목록:
+{
+  "1층바닥구조평면도": {
+    "total_texts": 153,
+    "spec_keywords_count": 0,
+    "found_symbols": {
+      "C4": 7,
+      "C3": 9,
+      "C2": 5,
+      "C1": 3
+    },
+    "text_height_distribution": {
+      "min": 150.0,
+      "max": 960.0,
+      "most_common": [
+        [
+          190.705182,
+          21
+        ],
+        [
+          448.0,
+          20
+        ]
+      ]
+    }
+  },
+  "2층바닥구조평면도": {
+    "total_texts": 158,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
+    "text_height_distribution": {
+      "min": 144.0,
+      "max": 960.0,
+      "most_common": [
+        [
+          448.0,
+          32
+        ],
+        [
+          190.705182,
+          21
+        ]
+      ]
+    }
+  },
+  "Y1축열골조도": {
+    "total_texts": 84,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
+    "text_height_distribution": {
+      "min": 150.0,
+      "max": 960.0,
+      "most_common": [
+        [
+          190.705182,
+          21
+        ],
+        [
+          190.0,
+          18
+        ]
+      ]
+    }
+  },
+  "우측면도": {
+    "total_texts": 35,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
+    "text_height_distribution": {
+      "min": 147.275405,
+      "max": 800.0,
+      "most_common": [
+        [
+          300.0,
+          16
+        ],
+        [
+          500.0,
+          6
+        ]
+      ]
+    }
+  },
+  "정면도": {
+    "total_texts": 36,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
+    "text_height_distribution": {
+      "min": 147.275405,
+      "max": 800.0,
+      "most_common": [
+        [
+          300.0,
+          17
+        ],
+        [
+          500.0,
+          6
+        ]
+      ]
+    }
+  },
+  "정면도우측면도": {
+    "total_texts": 57,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
+    "text_height_distribution": {
+      "min": 147.275405,
+      "max": 800.0,
+      "most_common": [
+        [
+          300.0,
+          29
+        ],
+        [
+          500.0,
+          12
+        ]
+      ]
+    }
+  },
+  "주단면도1": {
+    "total_texts": 74,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
+    "text_height_distribution": {
+      "min": 73.637703,
+      "max": 400.0,
+      "most_common": [
+        [
+          150.0,
+          42
+        ],
+        [
+          118.8,
+          14
+        ]
+      ]
+    }
+  },
+  "주단면도4": {
+    "total_texts": 66,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
+    "text_height_distribution": {
+      "min": 110.456554,
+      "max": 600.0,
+      "most_common": [
+        [
+          300.0,
+          35
+        ],
+        [
+          178.2,
+          14
+        ]
+      ]
+    }
+  },
+  "지붕층바닥구조평면도": {
+    "total_texts": 198,
+    "spec_keywords_count": 0,
+    "found_symbols": {},
+    "text_height_distribution": {
+      "min": 150.0,
+      "max": 960.0,
+      "most_common": [
+        [
+          448.0,
+          83
+        ],
+        [
+          190.705182,
+          21
+        ]
+      ]
+    }
+  }
+}
+
+### [참고 지침] CAD 결함 판단 및 override 폴백 안내:
+만약 세부 도면 분석 데이터 상에서 특정 기둥 부호의 발견 수량이 0개이나, 해당 기둥 부호에 대한 정보가 텍스트 분포 상에 실재한다면, count_from을 지정하지 말고 count_override: 0 으로 지정하십시오. 이 경우 spec_from은 일람표 규격이 존재하는 시트명을 정상 지정하십시오.
+
+### [매핑 지침]
+
+[도면5 매핑 가이드라인]
+- 해당 도면은 예외 구역이나 다중 동으로 분리할 필요가 없는 단일 동/단일 구역 구조의 도면입니다.
+- 따라서 'by_section' 구조를 절대 사용하지 마십시오! 최상위 '도면5' 키 바로 하위에 '기둥' 필드를 다이렉트로 배치하십시오.
+- [필수 규칙 - CAD 결함 시 예외 처리] 특정 기둥 부호에 대해 DXF 스캔 요약의 found_symbols에 검출된 기둥 개수가 0개이지만, spec_keywords_count가 0이 아니라면 이는 CAD 파일 구조 결함으로 인해 개수 검출이 누락된 상태입니다. 이 상황에서는 count_from 시트명을 절대 지정하지 마시고, 반드시 'count_override: 0'을 기재하여 예외 처리를 하십시오.
+
+
+위 도면5의 세부 페이지 정보와 매핑 지침을 바탕으로 정교하게 추론하여 완벽한 YAML/JSON 구조를 리턴하라.
+```
